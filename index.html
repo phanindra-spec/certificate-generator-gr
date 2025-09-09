@@ -168,17 +168,6 @@
             background: rgba(102, 126, 234, 0.1);
         }
 
-        .text-element.selected::after {
-            content: '';
-            position: absolute;
-            right: -5px;
-            bottom: -5px;
-            width: 10px;
-            height: 10px;
-            background: #667eea;
-            cursor: se-resize;
-        }
-
         .form-group {
             margin-bottom: 20px;
         }
@@ -209,7 +198,7 @@
             padding: 12px 20px;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -246,6 +235,14 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
+        .github-section {
+            background: #f0f9ff;
+            border: 2px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
         .upload-area {
             border: 2px dashed #ccc;
             border-radius: 8px;
@@ -261,9 +258,31 @@
             background: #f8faff;
         }
 
-        .upload-area.dragover {
+        .template-thumbnails {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .template-thumb {
+            aspect-ratio: 4/3;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.3s;
+        }
+
+        .template-thumb:hover {
             border-color: #667eea;
-            background: #f0f4ff;
+            transform: scale(1.05);
+        }
+
+        .template-thumb.active {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
         .element-list {
@@ -296,47 +315,6 @@
             border-color: #3b82f6;
         }
 
-        .share-section {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f0f4f8;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-        }
-
-        .share-link {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 10px;
-            margin: 10px 0;
-            font-family: monospace;
-            font-size: 12px;
-            word-break: break-all;
-            color: #4a5568;
-            max-height: 100px;
-            overflow-y: auto;
-        }
-
-        .actions {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
-        }
-
-        .color-input {
-            width: 40px !important;
-            height: 30px;
-            padding: 2px;
-        }
-
-        .size-input {
-            width: 80px !important;
-        }
-
         .section {
             margin-bottom: 25px;
             padding-bottom: 20px;
@@ -353,35 +331,17 @@
             font-size: 1.1rem;
         }
 
+        .actions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
         #backgroundImage {
             display: none;
-        }
-
-        .template-thumbnails {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .template-thumb {
-            aspect-ratio: 4/3;
-            border: 2px solid #e5e7eb;
-            border-radius: 6px;
-            cursor: pointer;
-            background-size: cover;
-            background-position: center;
-            transition: all 0.3s;
-        }
-
-        .template-thumb:hover {
-            border-color: #667eea;
-            transform: scale(1.05);
-        }
-
-        .template-thumb.active {
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
 
         .participant-table {
@@ -403,10 +363,6 @@
             font-weight: 600;
         }
 
-        .participant-table tr:hover {
-            background-color: #f8fafc;
-        }
-
         .id-display {
             font-family: monospace;
             background: #f1f5f9;
@@ -415,22 +371,18 @@
             font-size: 11px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 1400px) {
-            .main-content {
-                grid-template-columns: 280px 1fr 230px;
-            }
-            
-            .design-canvas {
-                width: 700px;
-                height: 525px;
-            }
+        .debug-panel {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 15px 0;
+            font-size: 12px;
         }
 
         @media (max-width: 1200px) {
             .main-content {
                 grid-template-columns: 1fr;
-                grid-template-rows: auto auto auto;
             }
             
             .design-canvas, .certificate-display {
@@ -439,21 +391,10 @@
                 height: 500px;
             }
         }
-
-        @media (max-width: 768px) {
-            .certificate-display {
-                height: 400px;
-            }
-            
-            .viewer-actions {
-                flex-direction: column;
-                align-items: center;
-            }
-        }
     </style>
 </head>
 <body>
-    <!-- VIEWER MODE (for certificate recipients) -->
+    <!-- VIEWER MODE -->
     <div id="viewerMode" class="viewer-mode" style="display: none;">
         <div class="viewer-container">
             <div class="viewer-header">
@@ -461,9 +402,7 @@
                 <p id="viewerWelcome">Congratulations on your achievement!</p>
             </div>
             
-            <div class="certificate-display" id="certificateDisplay">
-                <!-- Certificate content will be rendered here -->
-            </div>
+            <div class="certificate-display" id="certificateDisplay"></div>
             
             <div class="viewer-actions">
                 <button class="btn btn-primary" onclick="downloadCertificatePDF()">
@@ -476,62 +415,83 @@
         </div>
     </div>
 
-    <!-- DESIGNER MODE (for certificate creators) -->
+    <!-- DESIGNER MODE -->
     <div id="designerMode" class="designer-mode">
         <div class="container">
             <div class="header">
                 <h1>Certificate Designer</h1>
-                <p>Create beautiful certificates with personalized sharing links</p>
+                <p>Create beautiful certificates with GitHub-hosted images for short URLs</p>
             </div>
             
             <div class="main-content">
                 <!-- Left Sidebar -->
                 <div class="sidebar">
                     <div class="section">
-                        <h3>📁 Background</h3>
+                        <h3>📁 Background Options</h3>
                         
+                        <!-- Templates -->
+                        <label>Built-in Templates:</label>
                         <div class="template-thumbnails">
-                            <div class="template-thumb" data-template="classic" style="background: linear-gradient(45deg, #ffd700, #ffed4e);"></div>
-                            <div class="template-thumb" data-template="modern" style="background: linear-gradient(45deg, #667eea, #764ba2);"></div>
-                            <div class="template-thumb" data-template="elegant" style="background: linear-gradient(45deg, #2d3748, #4a5568);"></div>
-                            <div class="template-thumb" data-template="vibrant" style="background: linear-gradient(45deg, #ff6b6b, #feca57);"></div>
+                            <div class="template-thumb" data-template="classic" style="background: linear-gradient(45deg, #ffd700, #ffed4e);" title="Classic Gold"></div>
+                            <div class="template-thumb" data-template="modern" style="background: linear-gradient(45deg, #667eea, #764ba2);" title="Modern Blue"></div>
+                            <div class="template-thumb" data-template="elegant" style="background: linear-gradient(45deg, #2d3748, #4a5568);" title="Elegant Dark"></div>
+                            <div class="template-thumb" data-template="vibrant" style="background: linear-gradient(45deg, #ff6b6b, #feca57);" title="Vibrant Orange"></div>
                         </div>
                         
+                        <!-- GitHub Image Section -->
+                        <div class="github-section">
+                            <div class="form-group">
+                                <label>🚀 GitHub Image URL (Recommended - Creates Short URLs)</label>
+                                <input type="text" id="githubImageUrl" placeholder="https://yourusername.github.io/certificate-generator/images/design1.jpg" style="font-size: 12px;">
+                                <button class="btn btn-primary" onclick="loadGitHubImage()" style="margin-top: 8px; width: 100%;">
+                                    🔗 Load GitHub Image
+                                </button>
+                                <small style="color: #0369a1; font-size: 11px; display: block; margin-top: 8px; line-height: 1.4;">
+                                    <strong>💡 Setup Guide:</strong><br>
+                                    1. Create <code>/images/</code> folder in your GitHub repo<br>
+                                    2. Upload: design1.jpg, cert-bg.png, etc.<br>
+                                    3. URL format: https://username.github.io/repo/images/file.jpg<br>
+                                    4. Results in SHORT participant URLs ✅
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 15px 0; color: #6b7280; font-weight: 600;">- OR -</div>
+                        
+                        <!-- Local Upload -->
                         <div class="upload-area" onclick="document.getElementById('backgroundImage').click()">
-                            <div>📤 Upload Background</div>
-                            <small>Click or drag image here</small>
+                            <div>📤 Upload Local Image</div>
+                            <small style="color: #f59e0b;">⚠️ Testing only - Creates VERY long URLs</small>
                         </div>
                         <input type="file" id="backgroundImage" accept="image/*">
                         
-                        <button class="btn btn-secondary" onclick="clearBackground()">Clear Background</button>
+                        <button class="btn btn-secondary" onclick="clearBackground()">🗑️ Clear Background</button>
                     </div>
                     
                     <div class="section">
-                        <h3>➕ Add Elements</h3>
-                        <button class="btn btn-primary" onclick="addTextElement('Name', '{{name}}')">Add Name Field</button>
-                        <button class="btn btn-primary" onclick="addTextElement('Title', 'Certificate Title')">Add Title</button>
-                        <button class="btn btn-primary" onclick="addTextElement('Course', '{{course}}')">Add Course Field</button>
-                        <button class="btn btn-primary" onclick="addTextElement('Date', '{{date}}')">Add Date Field</button>
-                        <button class="btn btn-primary" onclick="addTextElement('Authority', 'Issued by Organization')">Add Authority</button>
-                        <button class="btn btn-secondary" onclick="addTextElement('Custom', 'Custom Text')">Add Custom Text</button>
+                        <h3>➕ Add Text Elements</h3>
+                        <button class="btn btn-primary" onclick="addTextElement('Name', '{{name}}')">👤 Add Name Field</button>
+                        <button class="btn btn-primary" onclick="addTextElement('Title', 'Certificate of Achievement')">🏆 Add Title</button>
+                        <button class="btn btn-primary" onclick="addTextElement('Course', '{{course}}')">📚 Add Course Field</button>
+                        <button class="btn btn-primary" onclick="addTextElement('Date', '{{date}}')">📅 Add Date Field</button>
+                        <button class="btn btn-primary" onclick="addTextElement('Authority', 'Issued by Organization')">🏢 Add Authority</button>
+                        <button class="btn btn-secondary" onclick="addTextElement('Custom', 'Custom Text')">📝 Add Custom Text</button>
                     </div>
                     
                     <div class="section">
-                        <h3>📋 Elements</h3>
+                        <h3>📋 Current Elements</h3>
                         <div class="element-list" id="elementList">
-                            <div style="text-align: center; color: #9ca3af; font-style: italic;">No elements added</div>
+                            <div style="text-align: center; color: #9ca3af; font-style: italic; padding: 20px;">No elements added yet</div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Canvas Area -->
                 <div class="canvas-area">
-                    <div class="design-canvas" id="designCanvas">
-                        <!-- Text elements will be added here -->
-                    </div>
+                    <div class="design-canvas" id="designCanvas"></div>
                     
                     <div class="actions">
-                        <button class="btn btn-primary" onclick="downloadPDF()">📄 Download PDF</button>
+                        <button class="btn btn-primary" onclick="downloadPDF()">📄 Download Preview PDF</button>
                         <button class="btn btn-secondary" onclick="saveDesign()">💾 Save Design</button>
                         <button class="btn btn-secondary" onclick="loadDesign()">📂 Load Design</button>
                     </div>
@@ -540,31 +500,28 @@
                 <!-- Right Properties Panel -->
                 <div class="properties-panel">
                     <div class="section">
-                        <h3>🎨 Properties</h3>
+                        <h3>🎨 Element Properties</h3>
                         <div id="propertiesContent">
-                            <div style="text-align: center; color: #9ca3af; font-style: italic;">Select an element to edit</div>
+                            <div style="text-align: center; color: #9ca3af; font-style: italic; padding: 20px;">Select an element to edit its properties</div>
                         </div>
                     </div>
                     
                     <div class="section">
-                        <h3>📐 Canvas</h3>
-                        <div class="form-group">
-                            <label>Canvas Width</label>
-                            <input type="number" id="canvasWidth" value="800" min="400" max="1200">
+                        <h3>⚙️ Status</h3>
+                        <div class="debug-panel">
+                            <div id="debugElements"><strong>Elements:</strong> 0</div>
+                            <div id="debugBackground"><strong>Background:</strong> None</div>
+                            <div id="debugReady"><strong>Ready:</strong> ❌ Need elements + background</div>
                         </div>
-                        <div class="form-group">
-                            <label>Canvas Height</label>
-                            <input type="number" id="canvasHeight" value="600" min="300" max="900">
-                        </div>
-                        <button class="btn btn-secondary" onclick="updateCanvasSize()">Apply Size</button>
                     </div>
                     
                     <div class="section">
-                        <h3>🔗 Participant Management</h3>
+                        <h3>🔗 Generate Links</h3>
                         
                         <div class="form-group">
-                            <label>Add Participants (CSV format)</label>
-                            <textarea id="participantData" placeholder="name,course,email&#10;John Doe,Web Development,john@email.com&#10;Jane Smith,Data Science,jane@email.com" rows="4"></textarea>
+                            <label>Participants (CSV format)</label>
+                            <textarea id="participantData" placeholder="John Doe,Web Development,john@email.com&#10;Jane Smith,Data Science,jane@email.com&#10;Mike Johnson,UI/UX Design,mike@email.com" rows="5"></textarea>
+                            <small style="color: #6b7280; font-size: 11px;">Format: name,course,email (one per line)</small>
                         </div>
                         
                         <div class="form-group">
@@ -572,21 +529,23 @@
                             <input type="date" id="issueDate">
                         </div>
                         
-                        <button class="btn btn-success" onclick="generateParticipantLinks()">🔗 Generate All Links</button>
+                        <button class="btn btn-success" onclick="generateParticipantLinks()" style="width: 100%;">
+                            🚀 Generate All Links
+                        </button>
                         
-                        <div id="participantResults" style="display: none; margin-top: 15px;">
-                            <div style="display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;">
-                                <button class="btn btn-secondary" onclick="copyAllParticipantLinks()">Copy All</button>
-                                <button class="btn btn-secondary" onclick="downloadParticipantList()">Download</button>
-                                <button class="btn btn-secondary" onclick="generateEmailTemplates()">Email Templates</button>
+                        <div id="participantResults" style="display: none; margin-top: 20px;">
+                            <div style="display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap;">
+                                <button class="btn btn-secondary" onclick="copyAllParticipantLinks()">📋 Copy All</button>
+                                <button class="btn btn-secondary" onclick="downloadParticipantList()">💾 Download List</button>
+                                <button class="btn btn-secondary" onclick="generateEmailTemplates()">📧 Email Templates</button>
                             </div>
-                            <div style="max-height: 250px; overflow-y: auto;">
+                            <div style="max-height: 300px; overflow-y: auto;">
                                 <table class="participant-table" id="participantTable">
                                     <thead>
                                         <tr>
                                             <th>Name</th>
                                             <th>ID</th>
-                                            <th>Link</th>
+                                            <th>Link Status</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -610,7 +569,7 @@
         let participantDatabase = {};
         let currentMode = 'designer';
 
-        // Initialize application
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             determineMode();
             if (currentMode === 'viewer') {
@@ -622,8 +581,6 @@
 
         function determineMode() {
             const urlParams = new URLSearchParams(window.location.search);
-            
-            // Check if it's a certificate view link
             if (urlParams.has('cert') || urlParams.has('id') || (urlParams.has('name') && urlParams.has('design'))) {
                 currentMode = 'viewer';
             } else {
@@ -638,29 +595,47 @@
             const urlParams = new URLSearchParams(window.location.search);
             let participantData = {};
             
-            // Handle different URL formats
-            if (urlParams.has('id')) {
-                // Masked ID format: ?id=abc123
-                const id = urlParams.get('id');
-                participantData = decodeParticipantData(id);
-            } else if (urlParams.has('cert')) {
-                // Certificate data format: ?cert=encoded_data
-                try {
-                    participantData = JSON.parse(decodeURIComponent(urlParams.get('cert')));
-                } catch (e) {
-                    console.error('Error parsing certificate data:', e);
+            try {
+                if (urlParams.has('cert')) {
+                    const encodedData = urlParams.get('cert');
+                    participantData = JSON.parse(decodeURIComponent(encodedData));
+                } else if (urlParams.has('id')) {
+                    const id = urlParams.get('id');
+                    const storedData = localStorage.getItem(`cert_${id}`);
+                    if (storedData) {
+                        participantData = JSON.parse(storedData);
+                    }
+                } else {
+                    const designParam = urlParams.get('design');
+                    let designData = {};
+                    
+                    if (designParam) {
+                        try {
+                            designData = JSON.parse(decodeURIComponent(designParam));
+                        } catch (e) {
+                            console.error('Error parsing design data:', e);
+                        }
+                    }
+                    
+                    participantData = {
+                        name: urlParams.get('name') || 'Certificate Recipient',
+                        course: urlParams.get('course') || '',
+                        date: urlParams.get('date') || new Date().toISOString().split('T')[0],
+                        design: designData
+                    };
                 }
-            } else {
-                // Legacy format: individual parameters
-                participantData = {
-                    name: urlParams.get('name') || 'Certificate Recipient',
-                    course: urlParams.get('course') || '',
-                    date: urlParams.get('date') || new Date().toISOString().split('T')[0],
-                    design: urlParams.get('design') || '{}'
-                };
+                
+                if (!participantData.name) {
+                    throw new Error('No participant data found');
+                }
+                
+                loadCertificateForViewing(participantData);
+                
+            } catch (error) {
+                console.error('Error loading certificate:', error);
+                document.getElementById('viewerWelcome').textContent = 'Error loading certificate. Please check your link.';
+                document.getElementById('certificateDisplay').innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">Certificate could not be loaded</div>';
             }
-            
-            loadCertificateForViewing(participantData);
         }
 
         function initDesignerMode() {
@@ -669,364 +644,9 @@
             
             setupDesignerEventListeners();
             setTodaysDate();
+            updateDebugInfo();
         }
 
-        function loadCertificateForViewing(participantData) {
-            try {
-                const designData = typeof participantData.design === 'string' 
-                    ? JSON.parse(decodeURIComponent(participantData.design))
-                    : participantData.design;
-                
-                // Update welcome message
-                document.getElementById('viewerWelcome').textContent = 
-                    `Congratulations ${participantData.name}!`;
-                
-                // Set up certificate display
-                const display = document.getElementById('certificateDisplay');
-                
-                // Apply background
-                if (designData.background) {
-                    display.style.backgroundImage = `url(${designData.background})`;
-                } else {
-                    // Default template
-                    display.style.backgroundImage = 'linear-gradient(45deg, #ffd700, #ffed4e)';
-                }
-                
-                // Apply canvas size
-                if (designData.canvasWidth && designData.canvasHeight) {
-                    display.style.width = designData.canvasWidth + 'px';
-                    display.style.height = designData.canvasHeight + 'px';
-                }
-                
-                // Render elements
-                if (designData.elements) {
-                    designData.elements.forEach(element => {
-                        const div = document.createElement('div');
-                        div.className = 'text-element';
-                        div.style.position = 'absolute';
-                        div.style.left = element.x + 'px';
-                        div.style.top = element.y + 'px';
-                        div.style.fontSize = element.fontSize + 'px';
-                        div.style.fontFamily = element.fontFamily;
-                        div.style.color = element.color;
-                        div.style.fontWeight = element.fontWeight;
-                        div.style.fontStyle = element.fontStyle;
-                        div.style.textAlign = element.textAlign;
-                        div.style.border = 'none';
-                        div.style.cursor = 'default';
-                        
-                        // Replace placeholders with actual data
-                        let displayText = element.text;
-                        displayText = displayText.replace('{{name}}', participantData.name || '[Name]');
-                        displayText = displayText.replace('{{course}}', participantData.course || '[Course]');
-                        displayText = displayText.replace('{{date}}', formatDate(participantData.date));
-                        
-                        div.textContent = displayText;
-                        display.appendChild(div);
-                    });
-                }
-                
-            } catch (error) {
-                console.error('Error loading certificate:', error);
-                document.getElementById('viewerWelcome').textContent = 'Error loading certificate';
-            }
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return 'Today';
-            try {
-                return new Date(dateStr).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-            } catch (e) {
-                return dateStr;
-            }
-        }
-
-        function generateMaskedId() {
-            return Math.random().toString(36).substr(2, 9);
-        }
-
-        function encodeParticipantData(data) {
-            // Simple encoding - in production, use proper encryption
-            const id = generateMaskedId();
-            participantDatabase[id] = data;
-            return id;
-        }
-
-        function decodeParticipantData(id) {
-            // First try localStorage
-            try {
-                const storedData = localStorage.getItem(`cert_${id}`);
-                if (storedData) {
-                    return JSON.parse(storedData);
-                }
-            } catch (e) {
-                console.error('Error reading from localStorage:', e);
-            }
-            
-            // Fallback to in-memory database (only works in same session)
-            return participantDatabase[id] || {};
-        }
-
-        function generateParticipantLinks() {
-            const participantText = document.getElementById('participantData').value.trim();
-            if (!participantText) {
-                alert('Please enter participant data in CSV format');
-                return;
-            }
-
-            const lines = participantText.split('\n').filter(line => line.trim());
-            const participants = [];
-            
-            // Parse CSV data
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                const parts = line.split(',').map(p => p.trim());
-                if (parts.length >= 1) {
-                    participants.push({
-                        name: parts[0] || '',
-                        course: parts[1] || '',
-                        email: parts[2] || '',
-                        id: generateMaskedId()
-                    });
-                }
-            }
-
-            if (participants.length === 0) {
-                alert('No valid participant data found');
-                return;
-            }
-
-            // Generate design data
-            const designData = {
-                elements: elements,
-                background: currentBackground,
-                canvasWidth: document.getElementById('canvasWidth').value,
-                canvasHeight: document.getElementById('canvasHeight').value
-            };
-
-            const issueDate = document.getElementById('issueDate').value;
-            const baseUrl = window.location.href.split('?')[0];
-
-            // Generate links for each participant
-            const participantLinks = participants.map(participant => {
-                const certificateData = {
-                    name: participant.name,
-                    course: participant.course,
-                    email: participant.email,
-                    date: issueDate,
-                    design: designData
-                };
-
-                // Store in database
-                participantDatabase[participant.id] = certificateData;
-
-                // Create clean viewer URL
-                const viewerUrl = `${baseUrl}?id=${participant.id}`;
-                
-                return {
-                    ...participant,
-                    url: viewerUrl,
-                    shortUrl: `${baseUrl}?id=${participant.id}`
-                };
-            });
-
-            displayParticipantResults(participantLinks);
-            window.generatedParticipantLinks = participantLinks;
-        }
-
-        function displayParticipantResults(participants) {
-            const resultsDiv = document.getElementById('participantResults');
-            const tableBody = document.querySelector('#participantTable tbody');
-            
-            const rows = participants.map(participant => `
-                <tr>
-                    <td>${participant.name}</td>
-                    <td><span class="id-display">${participant.id}</span></td>
-                    <td style="font-size: 10px; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${participant.shortUrl}</td>
-                </tr>
-            `).join('');
-            
-            tableBody.innerHTML = rows;
-            resultsDiv.style.display = 'block';
-        }
-
-        function copyAllParticipantLinks() {
-            if (!window.generatedParticipantLinks) return;
-            
-            const text = window.generatedParticipantLinks.map(participant => 
-                `${participant.name}: ${participant.url}`
-            ).join('\n\n');
-            
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = event.target;
-                const originalText = btn.textContent;
-                btn.textContent = 'Copied!';
-                btn.style.background = '#10b981';
-                btn.style.color = 'white';
-                
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                    btn.style.background = '';
-                    btn.style.color = '';
-                }, 2000);
-            });
-        }
-
-        function downloadParticipantList() {
-            if (!window.generatedParticipantLinks) return;
-            
-            const content = [
-                'Certificate Links Generated on ' + new Date().toLocaleDateString(),
-                '=' .repeat(60),
-                '',
-                'CLEAN CERTIFICATE VIEWER LINKS:',
-                '(Recipients see only their certificate and download option)',
-                '',
-                ...window.generatedParticipantLinks.map(participant => 
-                    `${participant.name} (ID: ${participant.id}): ${participant.url}`
-                ),
-                '',
-                'Instructions for participants:',
-                '1. Click your personal link',
-                '2. Your certificate loads automatically',
-                '3. Click "Download Certificate PDF" to save',
-                '',
-                'Each link is personalized and secure.',
-                'Links can be shared via email, WhatsApp, SMS, or any messaging platform.'
-            ].join('\n');
-            
-            const blob = new Blob([content], { type: 'text/plain' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'certificate_links.txt';
-            link.click();
-        }
-
-        function generateEmailTemplates() {
-            if (!window.generatedParticipantLinks) return;
-            
-            const individualTemplates = window.generatedParticipantLinks.map(participant => `
-=== EMAIL FOR: ${participant.name.toUpperCase()} ===
-
-Subject: 🎉 Your Certificate is Ready - ${participant.course || 'Course Completion'}
-
-Hi ${participant.name},
-
-Congratulations! Your certificate is ready for download.
-
-🏆 Your Personal Certificate Link: ${participant.url}
-
-What to do next:
-• Click the link above
-• Your certificate will load automatically  
-• Click "Download Certificate PDF" to save
-• Share your achievement!
-
-This is your personal link - no need to enter any information.
-
-Best regards,
-[Your Organization Name]
-
-${participant.email ? `(Sent to: ${participant.email})` : ''}
-
----
-            `).join('\n');
-            
-            const content = `PERSONALIZED EMAIL TEMPLATES
-Generated on ${new Date().toLocaleDateString()}
-${individual.templates}
-
-BULK EMAIL INSTRUCTIONS:
-1. Copy each email section above
-2. Send individual emails to each participant
-3. Or use mail merge tools with the participant data
-4. Each link is unique and personalized
-
-Total Participants: ${window.generatedParticipantLinks.length}
-`;
-            
-            const blob = new Blob([content], { type: 'text/plain' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'personalized_email_templates.txt';
-            link.click();
-        }
-
-        // Viewer mode functions
-        async function downloadCertificatePDF() {
-            const { jsPDF } = window.jspdf;
-            const certificate = document.getElementById('certificateDisplay');
-            
-            try {
-                const canvas = await html2canvas(certificate, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
-                
-                const pdf = new jsPDF('landscape', 'mm', 'a4');
-                const imgWidth = 297;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                
-                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
-                
-                // Get recipient name from URL or use default
-                const urlParams = new URLSearchParams(window.location.search);
-                let filename = 'Certificate.pdf';
-                
-                if (urlParams.has('id')) {
-                    const data = decodeParticipantData(urlParams.get('id'));
-                    if (data.name) {
-                        filename = `${data.name.replace(/\s+/g, '_')}_Certificate.pdf`;
-                    }
-                }
-                
-                pdf.save(filename);
-            } catch (error) {
-                console.error('Error generating PDF:', error);
-                alert('Error generating PDF. Please try again.');
-            }
-        }
-
-        function shareCertificate() {
-            const url = window.location.href;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'My Certificate',
-                    text: 'Check out my certificate!',
-                    url: url
-                }).catch(() => {
-                    // Fallback to copy
-                    copyToClipboard(url);
-                });
-            } else {
-                copyToClipboard(url);
-            }
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Certificate link copied to clipboard!');
-            }).catch(() => {
-                // Fallback
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                alert('Certificate link copied!');
-            });
-        }
-
-        // Designer mode functions (simplified for space)
         function setupDesignerEventListeners() {
             const canvas = document.getElementById('designCanvas');
             
@@ -1056,7 +676,43 @@ Total Participants: ${window.generatedParticipantLinks.length}
             document.getElementById('issueDate').value = today;
         }
 
-        // Include all other designer functions here (abbreviated for space)
+        // GITHUB IMAGE LOADING FUNCTION
+        function loadGitHubImage() {
+            const githubUrl = document.getElementById('githubImageUrl').value.trim();
+            if (!githubUrl) {
+                alert('Please enter a GitHub image URL');
+                return;
+            }
+            
+            if (!githubUrl.startsWith('https://') || !githubUrl.includes('github.io')) {
+                alert('Please enter a valid GitHub Pages URL (https://username.github.io/...)');
+                return;
+            }
+            
+            console.log('Loading GitHub image:', githubUrl);
+            
+            const testImg = new Image();
+            testImg.onload = function() {
+                console.log('✅ GitHub image loaded successfully');
+                
+                const canvas = document.getElementById('designCanvas');
+                canvas.style.backgroundImage = `url(${githubUrl})`;
+                currentBackground = githubUrl;
+                
+                document.querySelectorAll('.template-thumb').forEach(t => t.classList.remove('active'));
+                updateDebugInfo();
+                
+                alert('✅ GitHub image loaded! This will create SHORT participant URLs.');
+            };
+            
+            testImg.onerror = function() {
+                console.error('❌ Failed to load GitHub image');
+                alert('❌ Could not load image. Check:\n\n1. URL is correct\n2. Image exists in your repo\n3. GitHub Pages is enabled\n4. Image is publicly accessible');
+            };
+            
+            testImg.src = githubUrl;
+        }
+
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
@@ -1092,27 +748,39 @@ Total Participants: ${window.generatedParticipantLinks.length}
             canvas.style.backgroundImage = `url(${imageData})`;
             currentBackground = imageData;
             
+            console.log('⚠️ Local image uploaded - will create VERY long URLs');
+            console.log('Image size:', Math.round(imageData.length / 1024) + 'KB');
+            
             document.querySelectorAll('.template-thumb').forEach(t => t.classList.remove('active'));
+            document.getElementById('githubImageUrl').value = '';
+            
+            updateDebugInfo();
         }
 
         function setTemplate(template) {
             const canvas = document.getElementById('designCanvas');
-            currentBackground = null;
             
             switch(template) {
                 case 'classic':
                     canvas.style.backgroundImage = 'linear-gradient(45deg, #ffd700, #ffed4e)';
+                    currentBackground = 'template-classic';
                     break;
                 case 'modern':
                     canvas.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    currentBackground = 'template-modern';
                     break;
                 case 'elegant':
                     canvas.style.backgroundImage = 'linear-gradient(45deg, #2d3748, #4a5568)';
+                    currentBackground = 'template-elegant';
                     break;
                 case 'vibrant':
                     canvas.style.backgroundImage = 'linear-gradient(45deg, #ff6b6b, #feca57)';
+                    currentBackground = 'template-vibrant';
                     break;
             }
+            
+            document.getElementById('githubImageUrl').value = '';
+            updateDebugInfo();
         }
 
         function clearBackground() {
@@ -1120,6 +788,8 @@ Total Participants: ${window.generatedParticipantLinks.length}
             canvas.style.backgroundImage = 'none';
             currentBackground = null;
             document.querySelectorAll('.template-thumb').forEach(t => t.classList.remove('active'));
+            document.getElementById('githubImageUrl').value = '';
+            updateDebugInfo();
         }
 
         function addTextElement(type, defaultText) {
@@ -1141,6 +811,7 @@ Total Participants: ${window.generatedParticipantLinks.length}
             elements.push(element);
             renderElement(element);
             updateElementList();
+            updateDebugInfo();
             selectElementById(element.id);
         }
 
@@ -1165,13 +836,13 @@ Total Participants: ${window.generatedParticipantLinks.length}
         function updateElementList() {
             const list = document.getElementById('elementList');
             if (elements.length === 0) {
-                list.innerHTML = '<div style="text-align: center; color: #9ca3af; font-style: italic;">No elements added</div>';
+                list.innerHTML = '<div style="text-align: center; color: #9ca3af; font-style: italic; padding: 20px;">No elements added yet</div>';
                 return;
             }
             
             list.innerHTML = elements.map(element => `
                 <div class="element-item" onclick="selectElementById('${element.id}')" data-id="${element.id}">
-                    <span>${element.type}: ${element.text.substring(0, 20)}${element.text.length > 20 ? '...' : ''}</span>
+                    <span><strong>${element.type}:</strong> ${element.text.substring(0, 20)}${element.text.length > 20 ? '...' : ''}</span>
                     <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteElement('${element.id}', event)">×</button>
                 </div>
             `).join('');
@@ -1222,6 +893,7 @@ Total Participants: ${window.generatedParticipantLinks.length}
             elements = elements.filter(e => e.id !== id);
             document.getElementById(id).remove();
             updateElementList();
+            updateDebugInfo();
             if (selectedElement && selectedElement.id === id) {
                 deselectElement();
             }
@@ -1231,18 +903,18 @@ Total Participants: ${window.generatedParticipantLinks.length}
             const panel = document.getElementById('propertiesContent');
             
             if (!selectedElement) {
-                panel.innerHTML = '<div style="text-align: center; color: #9ca3af; font-style: italic;">Select an element to edit</div>';
+                panel.innerHTML = '<div style="text-align: center; color: #9ca3af; font-style: italic; padding: 20px;">Select an element to edit its properties</div>';
                 return;
             }
             
             panel.innerHTML = `
                 <div class="form-group">
-                    <label>Text</label>
+                    <label>Text Content</label>
                     <textarea id="propText" rows="3">${selectedElement.text}</textarea>
                 </div>
                 <div class="form-group">
                     <label>Font Size</label>
-                    <input type="number" id="propFontSize" value="${selectedElement.fontSize}" min="8" max="100" class="size-input">
+                    <input type="number" id="propFontSize" value="${selectedElement.fontSize}" min="8" max="100">
                 </div>
                 <div class="form-group">
                     <label>Font Family</label>
@@ -1254,8 +926,8 @@ Total Participants: ${window.generatedParticipantLinks.length}
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Color</label>
-                    <input type="color" id="propColor" value="${selectedElement.color}" class="color-input">
+                    <label>Text Color</label>
+                    <input type="color" id="propColor" value="${selectedElement.color}">
                 </div>
                 <div class="form-group">
                     <label>Font Weight</label>
@@ -1264,7 +936,7 @@ Total Participants: ${window.generatedParticipantLinks.length}
                         <option value="bold" ${selectedElement.fontWeight === 'bold' ? 'selected' : ''}>Bold</option>
                     </select>
                 </div>
-                <button class="btn btn-primary" onclick="applyProperties()">Apply Changes</button>
+                <button class="btn btn-primary" onclick="applyProperties()">✅ Apply Changes</button>
             `;
         }
 
@@ -1290,6 +962,238 @@ Total Participants: ${window.generatedParticipantLinks.length}
             div.textContent = element.text;
         }
 
+        function updateDebugInfo() {
+            const elementCount = elements.length;
+            const hasBackground = !!currentBackground;
+            
+            let backgroundType = '❌ None';
+            if (currentBackground) {
+                if (currentBackground.startsWith('https://')) {
+                    backgroundType = `🚀 GitHub Image (SHORT URLs)`;
+                } else if (currentBackground.startsWith('data:')) {
+                    const sizeKB = Math.round(currentBackground.length / 1024);
+                    backgroundType = `📷 Local Image (${sizeKB}KB - LONG URLs)`;
+                } else if (currentBackground.startsWith('template-')) {
+                    backgroundType = `🎨 Template (SHORT URLs)`;
+                }
+            }
+            
+            const isReady = elementCount > 0 && hasBackground;
+            
+            document.getElementById('debugElements').innerHTML = `<strong>Elements:</strong> ${elementCount}`;
+            document.getElementById('debugBackground').innerHTML = `<strong>Background:</strong> ${backgroundType}`;
+            document.getElementById('debugReady').innerHTML = `<strong>Ready:</strong> ${isReady ? '✅ Ready to generate!' : '❌ Need elements + background'}`;
+        }
+
+        // PARTICIPANT LINK GENERATION
+        function generateParticipantLinks() {
+            const participantText = document.getElementById('participantData').value.trim();
+            if (!participantText) {
+                alert('Please enter participant data in CSV format');
+                return;
+            }
+
+            if (elements.length === 0) {
+                alert('Please add at least one text element first!');
+                return;
+            }
+
+            const lines = participantText.split('\n').filter(line => line.trim());
+            const participants = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 1) {
+                    participants.push({
+                        name: parts[0] || '',
+                        course: parts[1] || '',
+                        email: parts[2] || '',
+                        id: generateMaskedId()
+                    });
+                }
+            }
+
+            if (participants.length === 0) {
+                alert('No valid participant data found');
+                return;
+            }
+
+            const designData = {
+                elements: elements.map(el => ({...el})),
+                background: currentBackground,
+                backgroundType: currentBackground?.startsWith('https://') ? 'github-url' : 
+                               currentBackground?.startsWith('data:') ? 'base64' : 
+                               currentBackground?.startsWith('template-') ? 'template' : 'none',
+                canvasWidth: 800,
+                canvasHeight: 600
+            };
+
+            const issueDate = document.getElementById('issueDate').value;
+            const baseUrl = window.location.href.split('?')[0];
+
+            const participantLinks = participants.map(participant => {
+                const certificateData = {
+                    name: participant.name,
+                    course: participant.course,
+                    email: participant.email,
+                    date: issueDate,
+                    design: designData
+                };
+
+                const jsonString = JSON.stringify(certificateData);
+                const encodedData = encodeURIComponent(jsonString);
+                const fullUrl = `${baseUrl}?cert=${encodedData}`;
+                
+                try {
+                    localStorage.setItem(`cert_${participant.id}`, jsonString);
+                } catch(e) {
+                    console.warn('localStorage failed:', e);
+                }
+                
+                return {
+                    ...participant,
+                    url: fullUrl,
+                    urlLength: fullUrl.length,
+                    isOptimized: designData.backgroundType === 'github-url',
+                    backgroundType: designData.backgroundType
+                };
+            });
+
+            displayParticipantResults(participantLinks);
+            window.generatedParticipantLinks = participantLinks;
+        }
+
+        function generateMaskedId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function displayParticipantResults(participants) {
+            const resultsDiv = document.getElementById('participantResults');
+            const tableBody = document.querySelector('#participantTable tbody');
+            
+            const rows = participants.map(participant => {
+                const urlLength = participant.urlLength;
+                let statusIcon, statusText, rowColor;
+                
+                if (participant.isOptimized) {
+                    statusIcon = '🚀';
+                    statusText = `Optimized (${urlLength} chars)`;
+                    rowColor = '#f0f9ff';
+                } else if (urlLength < 2000) {
+                    statusIcon = '✅';
+                    statusText = `Good (${urlLength} chars)`;
+                    rowColor = '#f0fdf4';
+                } else if (urlLength < 8000) {
+                    statusIcon = '⚠️';
+                    statusText = `Long (${urlLength} chars)`;
+                    rowColor = '#fffbeb';
+                } else {
+                    statusIcon = '❌';
+                    statusText = `Very Long (${urlLength} chars)`;
+                    rowColor = '#fef2f2';
+                }
+                
+                return `
+                <tr style="background: ${rowColor};">
+                    <td>${participant.name}</td>
+                    <td><span class="id-display">${participant.id}</span></td>
+                    <td style="font-size: 10px;">
+                        <div>${statusIcon} ${statusText}</div>
+                        <div style="color: #666; font-size: 9px;">
+                            ${participant.backgroundType === 'github-url' ? '🌐 GitHub Image' : 
+                              participant.backgroundType === 'template' ? '🎨 Template' : 
+                              participant.backgroundType === 'base64' ? '📷 Embedded Image' : 'Other'}
+                        </div>
+                    </td>
+                </tr>
+            `}).join('');
+            
+            tableBody.innerHTML = rows;
+            resultsDiv.style.display = 'block';
+            
+            const optimizedCount = participants.filter(p => p.isOptimized).length;
+            const errorCount = participants.filter(p => p.urlLength >= 8000).length;
+            
+            if (errorCount > 0) {
+                alert(`⚠️ Warning: ${errorCount} URLs are very long (>8000 chars) and may not work in all email clients.\n\nRecommendation: Use GitHub images for shorter URLs.`);
+            }
+        }
+
+        function copyAllParticipantLinks() {
+            if (!window.generatedParticipantLinks) return;
+            
+            const text = window.generatedParticipantLinks.map(participant => 
+                `${participant.name}: ${participant.url}`
+            ).join('\n\n');
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('All links copied to clipboard!');
+            });
+        }
+
+        function downloadParticipantList() {
+            if (!window.generatedParticipantLinks) return;
+            
+            const content = [
+                'Certificate Links Generated on ' + new Date().toLocaleDateString(),
+                '='.repeat(60),
+                '',
+                'PERSONALIZED CERTIFICATE LINKS:',
+                '',
+                ...window.generatedParticipantLinks.map(participant => 
+                    `${participant.name}: ${participant.url}`
+                ),
+                '',
+                'Instructions for participants:',
+                '1. Click your personal link',
+                '2. Your certificate loads automatically',
+                '3. Click "Download Certificate PDF"',
+                '',
+                `Total: ${window.generatedParticipantLinks.length} participants`
+            ].join('\n');
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'certificate_links.txt';
+            link.click();
+        }
+
+        function generateEmailTemplates() {
+            if (!window.generatedParticipantLinks) return;
+            
+            const templates = window.generatedParticipantLinks.map(participant => `
+=== EMAIL FOR: ${participant.name.toUpperCase()} ===
+
+Subject: 🎉 Your Certificate is Ready!
+
+Hi ${participant.name},
+
+Congratulations! Your certificate is ready for download.
+
+🏆 Your Certificate Link: ${participant.url}
+
+Instructions:
+• Click the link above
+• Your certificate loads automatically
+• Click "Download Certificate PDF"
+
+Best regards,
+[Your Organization]
+---
+            `).join('\n');
+            
+            const blob = new Blob([templates], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'email_templates.txt';
+            link.click();
+        }
+
+        // Drag and drop functionality
         function startDrag(event) {
             if (event.target.classList.contains('text-element')) {
                 dragElement = event.target;
@@ -1324,21 +1228,192 @@ Total Participants: ${window.generatedParticipantLinks.length}
             dragElement = null;
         }
 
-        function updateCanvasSize() {
-            const canvas = document.getElementById('designCanvas');
-            const width = document.getElementById('canvasWidth').value;
-            const height = document.getElementById('canvasHeight').value;
+        // Certificate viewing functions
+        function loadCertificateForViewing(participantData) {
+            try {
+                let designData = participantData.design;
+                if (typeof designData === 'string') {
+                    designData = JSON.parse(decodeURIComponent(designData));
+                }
+                
+                if (!designData || typeof designData !== 'object') {
+                    designData = {};
+                }
+                
+                document.getElementById('viewerWelcome').textContent = 
+                    `Congratulations ${participantData.name}!`;
+                
+                const display = document.getElementById('certificateDisplay');
+                display.innerHTML = '';
+                
+                // Apply background
+                if (designData.background) {
+                    const backgroundType = designData.backgroundType || 'auto-detect';
+                    
+                    if (backgroundType === 'github-url' || designData.background.startsWith('https://')) {
+                        display.style.backgroundImage = `url(${designData.background})`;
+                    } else if (backgroundType === 'base64' || designData.background.startsWith('data:')) {
+                        display.style.backgroundImage = `url(${designData.background})`;
+                    } else if (backgroundType === 'template' || designData.background.startsWith('template-')) {
+                        const template = designData.background.replace('template-', '');
+                        switch(template) {
+                            case 'classic':
+                                display.style.backgroundImage = 'linear-gradient(45deg, #ffd700, #ffed4e)';
+                                break;
+                            case 'modern':
+                                display.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                                break;
+                            case 'elegant':
+                                display.style.backgroundImage = 'linear-gradient(45deg, #2d3748, #4a5568)';
+                                break;
+                            case 'vibrant':
+                                display.style.backgroundImage = 'linear-gradient(45deg, #ff6b6b, #feca57)';
+                                break;
+                        }
+                    } else {
+                        display.style.backgroundImage = `url(${designData.background})`;
+                    }
+                } else {
+                    display.style.backgroundImage = 'linear-gradient(45deg, #ffd700, #ffed4e)';
+                }
+                
+                // Apply canvas size
+                display.style.width = (designData.canvasWidth || 800) + 'px';
+                display.style.height = (designData.canvasHeight || 600) + 'px';
+                
+                // Render elements
+                if (designData.elements && Array.isArray(designData.elements)) {
+                    designData.elements.forEach(element => {
+                        const div = document.createElement('div');
+                        div.style.position = 'absolute';
+                        div.style.left = (element.x || 50) + 'px';
+                        div.style.top = (element.y || 50) + 'px';
+                        div.style.fontSize = (element.fontSize || 24) + 'px';
+                        div.style.fontFamily = element.fontFamily || 'Arial';
+                        div.style.color = element.color || '#000000';
+                        div.style.fontWeight = element.fontWeight || 'normal';
+                        div.style.textAlign = element.textAlign || 'left';
+                        
+                        let displayText = element.text || '';
+                        displayText = displayText.replace('{{name}}', participantData.name || '[Name]');
+                        displayText = displayText.replace('{{course}}', participantData.course || '[Course]');
+                        displayText = displayText.replace('{{date}}', formatDate(participantData.date));
+                        
+                        div.textContent = displayText;
+                        display.appendChild(div);
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error loading certificate:', error);
+                document.getElementById('viewerWelcome').textContent = 'Error loading certificate';
+                document.getElementById('certificateDisplay').innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">Certificate could not be loaded</div>';
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Today';
+            try {
+                return new Date(dateStr).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        // PDF download for viewer
+        async function downloadCertificatePDF() {
+            const { jsPDF } = window.jspdf;
+            const certificate = document.getElementById('certificateDisplay');
             
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
+            try {
+                const canvas = await html2canvas(certificate, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const pdf = new jsPDF('landscape', 'mm', 'a4');
+                const imgWidth = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                let filename = 'Certificate.pdf';
+                
+                if (urlParams.has('id')) {
+                    const data = JSON.parse(localStorage.getItem(`cert_${urlParams.get('id')}`));
+                    if (data?.name) {
+                        filename = `${data.name.replace(/\s+/g, '_')}_Certificate.pdf`;
+                    }
+                }
+                
+                pdf.save(filename);
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            }
+        }
+
+        function shareCertificate() {
+            const url = window.location.href;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Certificate',
+                    text: 'Check out my certificate!',
+                    url: url
+                });
+            } else {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('Certificate link copied to clipboard!');
+                });
+            }
+        }
+
+        // PDF download for designer
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const canvas = document.getElementById('designCanvas');
+            
+            const selected = document.querySelector('.text-element.selected');
+            if (selected) {
+                selected.classList.remove('selected');
+            }
+            
+            try {
+                const htmlCanvas = await html2canvas(canvas, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const pdf = new jsPDF('landscape', 'mm', 'a4');
+                const imgWidth = 297;
+                const imgHeight = (htmlCanvas.height * imgWidth) / htmlCanvas.width;
+                
+                pdf.addImage(htmlCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save('Certificate_Template.pdf');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            } finally {
+                if (selected) {
+                    selected.classList.add('selected');
+                }
+            }
         }
 
         function saveDesign() {
             const designData = {
                 elements: elements,
                 background: currentBackground,
-                canvasWidth: document.getElementById('canvasWidth').value,
-                canvasHeight: document.getElementById('canvasHeight').value
+                canvasWidth: 800,
+                canvasHeight: 600
             };
             
             const dataStr = JSON.stringify(designData, null, 2);
@@ -1361,7 +1436,30 @@ Total Participants: ${window.generatedParticipantLinks.length}
                     reader.onload = function(e) {
                         try {
                             const designData = JSON.parse(e.target.result);
-                            loadDesignFromData(designData);
+                            
+                            if (designData.background) {
+                                if (designData.background.startsWith('https://')) {
+                                    document.getElementById('githubImageUrl').value = designData.background;
+                                    loadGitHubImage();
+                                } else {
+                                    currentBackground = designData.background;
+                                    document.getElementById('designCanvas').style.backgroundImage = `url(${designData.background})`;
+                                }
+                            }
+                            
+                            if (designData.elements) {
+                                elements = designData.elements;
+                                elementCounter = Math.max(...elements.map(e => parseInt(e.id.split('_')[1]))) || 0;
+                                
+                                document.querySelectorAll('.text-element').forEach(el => el.remove());
+                                
+                                elements.forEach(element => {
+                                    renderElement(element);
+                                });
+                                
+                                updateElementList();
+                                updateDebugInfo();
+                            }
                         } catch (error) {
                             alert('Error loading design file');
                         }
@@ -1370,64 +1468,6 @@ Total Participants: ${window.generatedParticipantLinks.length}
                 }
             };
             input.click();
-        }
-
-        function loadDesignFromData(designData) {
-            if (designData.background) {
-                setBackgroundImage(designData.background);
-            }
-            
-            if (designData.canvasWidth && designData.canvasHeight) {
-                document.getElementById('canvasWidth').value = designData.canvasWidth;
-                document.getElementById('canvasHeight').value = designData.canvasHeight;
-                updateCanvasSize();
-            }
-            
-            if (designData.elements) {
-                elements = designData.elements;
-                elementCounter = Math.max(...elements.map(e => parseInt(e.id.split('_')[1]))) || 0;
-                
-                document.querySelectorAll('.text-element').forEach(el => el.remove());
-                
-                elements.forEach(element => {
-                    renderElement(element);
-                });
-                
-                updateElementList();
-            }
-        }
-
-        async function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const canvas = document.getElementById('designCanvas');
-            
-            const selected = document.querySelector('.text-element.selected');
-            if (selected) {
-                selected.classList.remove('selected');
-            }
-            
-            try {
-                const htmlCanvas = await html2canvas(canvas, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
-                
-                const pdf = new jsPDF('landscape', 'mm', 'a4');
-                const imgWidth = 297;
-                const imgHeight = (htmlCanvas.height * imgWidth) / htmlCanvas.width;
-                
-                pdf.addImage(htmlCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
-                
-                pdf.save('Certificate_Template.pdf');
-            } catch (error) {
-                console.error('Error generating PDF:', error);
-                alert('Error generating PDF. Please try again.');
-            } finally {
-                if (selected) {
-                    selected.classList.add('selected');
-                }
-            }
         }
     </script>
 </body>
