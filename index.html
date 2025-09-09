@@ -757,6 +757,17 @@
         }
 
         function decodeParticipantData(id) {
+            // First try localStorage
+            try {
+                const storedData = localStorage.getItem(`cert_${id}`);
+                if (storedData) {
+                    return JSON.parse(storedData);
+                }
+            } catch (e) {
+                console.error('Error reading from localStorage:', e);
+            }
+            
+            // Fallback to in-memory database (only works in same session)
             return participantDatabase[id] || {};
         }
 
