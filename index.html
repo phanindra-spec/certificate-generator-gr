@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* VIEWER MODE STYLES */
+        .viewer-mode {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .viewer-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .viewer-header {
+            margin-bottom: 30px;
+        }
+
+        .viewer-header h1 {
+            color: #1a202c;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .viewer-header p {
+            color: #4a5568;
+            font-size: 1.1rem;
+        }
+
+        .certificate-display {
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0 auto 30px;
+        }
+
+        .viewer-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* DESIGNER MODE STYLES */
+        .designer-mode .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr 250px;
+            gap: 0;
+            min-height: 700px;
+        }
+
+        .sidebar, .properties-panel {
+            background: #f8fafc;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar {
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .properties-panel {
+            border-left: 1px solid #e2e8f0;
+        }
+
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #fafbfc;
+            padding: 20px;
+            position: relative;
+        }
+
+        .design-canvas {
+            width: 800px;
+            height: 600px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .text-element {
+            position: absolute;
+            cursor: move;
+            padding: 5px;
+            border: 2px dashed transparent;
+            min-width: 50px;
+            min-height: 20px;
+            word-wrap: break-word;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .text-element:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .text-element.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .text-element.selected::after {
+            content: '';
+            position: absolute;
+            right: -5px;
+            bottom: -5px;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            cursor: se-resize;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 5px 5px 0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8faff;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .element-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 10px;
+            background: white;
+        }
+
+        .element-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 5px;
+            border: 1px solid transparent;
+        }
+
+        .element-item:hover {
+            background: #f8fafc;
+            border-color: #e5e7eb;
+        }
+
+        .element-item.selected {
+            background: #eff6ff;
+            border-color: #3b82f6;
+        }
+
+        .share-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f4f8;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .share-link {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            word-break: break-all;
+            color: #4a5568;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .actions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .color-input {
+            width: 40px !important;
+            height: 30px;
+            padding: 2px;
+        }
+
+        .size-input {
+            width: 80px !important;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section h3 {
+            margin-bottom: 15px;
+            color: #1f2937;
+            font-size: 1.1rem;
+        }
+
+        #backgroundImage {
+            display: none;
+        }
+
+        .template-thumbnails {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .template-thumb {
+            aspect-ratio: 4/3;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            transition: all 0.3s;
+        }
+
+        .template-thumb:hover {
+            border-color: #667eea;
+            transform: scale(1.05);
+        }
+
+        .template-thumb.active {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .participant-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        .participant-table th,
+        .participant-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .participant-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .participant-table tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .id-display {
+            font-family: monospace;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1400px) {
+            .main-content {
+                grid-template-columns: 280px 1fr 230px;
+            }
+            
+            .design-canvas {
+                width: 700px;
+                height: 525px;
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            
+            .design-canvas, .certificate-display {
+                width: 100%;
+                max-width: 800px;
+                height: 500px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .certificate-display {
+                height: 400px;
+            }
+            
+            .viewer-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- VIEWER MODE (for certificate recipients) -->
+    <div id="viewerMode" class="viewer-mode" style="display: none;">
+        <div class="viewer-container">
+            <div class="viewer-header">
+                <h1>Your Certificate</h1>
+                <p id="viewerWelcome">Congratulations on your achievement!</p>
+            </div>
+            
+            <div class="certificate-display" id="certificateDisplay">
+                <!-- Certificate content will be rendered here -->
+            </div>
+            
+            <div class="viewer-actions">
+                <button class="btn btn-primary" onclick="downloadCertificatePDF()">
+                    📄 Download Certificate PDF
+                </button>
+                <button class="btn btn-secondary" onclick="shareCertificate()">
+                    🔗 Share Certificate
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESIGNER MODE (for certificate creators) -->
+    <div id="designerMode" class="designer-mode">
+        <div class="container">
+            <div class="header">
+                <h1>Certificate Designer</h1>
+                <p>Create beautiful certificates with personalized sharing links</p>
+            </div>
+            
+            <div class="main-content">
+                <!-- Left Sidebar -->
+                <div class="sidebar">
+                    <div class="section">
+                        <h3>📁 Background</h3>
+                        
+                        <div class="template-thumbnails">
+                            <div class="template-thumb" data-template="classic" style="background: linear-gradient(45deg, #ffd700, #ffed4e);"></div>
+                            <div class="template-thumb" data-template="modern" style="background: linear-gradient(45deg, #667eea, #764ba2);"></div>
+                            <div class="template-thumb" data-template="elegant" style="background: linear-gradient(45deg, #2d3748, #4a5568);"></div>
+                            <div class="template-thumb" data-template="vibrant" style="background: linear-gradient(45deg, #ff6b6b, #feca57);"></div>
+                        </div>
+                        
+                        <div class="upload-area" onclick="document.getElementById('backgroundImage').click()">
+                            <div>📤 Upload Background</div>
+                            <small>Click or drag image here</small>
+                        </div>
+                        <input type="file" id="backgroundImage" accept="image/*">
+                        
+                        <button class="btn btn-secondary" onclick="clearBackground()">Clear Background</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>➕ Add Elements</h3>
+                        <button class="btn btn-primary" onclick="addTextElement('Name', '{{name}}')">Add Name Field</button>
+                        <button class="btn btn-primary" onclick="addTextElement('Title', 'Certificate Title')">Add Title</button>
+                        <button class="btn btn-primary" onclick="addTextElement('Course', '{{course}}')">Add Course Field</button>
+                        <button class="btn btn-primary" onclick="addTextElement('Date', '{{date}}')">Add Date Field</button>
+                        <button class="btn btn-primary" onclick="addTextElement('Authority', 'Issued by Organization')">Add Authority</button>
+                        <button class="btn btn-secondary" onclick="addTextElement('Custom', 'Custom Text')">Add Custom Text</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📋 Elements</h3>
+                        <div class="element-list" id="elementList">
+                            <div style="text-align: center; color: #9ca3af; font-style: italic;">No elements added</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Canvas Area -->
+                <div class="canvas-area">
+                    <div class="design-canvas" id="designCanvas">
+                        <!-- Text elements will be added here -->
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="downloadPDF()">📄 Download PDF</button>
+                        <button class="btn btn-secondary" onclick="saveDesign()">💾 Save Design</button>
+                        <button class="btn btn-secondary" onclick="loadDesign()">📂 Load Design</button>
+                    </div>
+                </div>
+                
+                <!-- Right Properties Panel -->
+                <div class="properties-panel">
+                    <div class="section">
+                        <h3>🎨 Properties</h3>
+                        <div id="propertiesContent">
+                            <div style="text-align: center; color: #9ca3af; font-style: italic;">Select an element to edit</div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>📐 Canvas</h3>
+                        <div class="form-group">
+                            <label>Canvas Width</label>
+                            <input type="number" id="canvasWidth" value="800" min="400" max="1200">
+                        </div>
+                        <div class="form-group">
+                            <label>Canvas Height</label>
+                            <input type="number" id="canvasHeight" value="600" min="300" max="900">
+                        </div>
+                        <button class="btn btn-secondary" onclick="updateCanvasSize()">Apply Size</button>
+                    </div>
+                    
+                    <div class="section">
+                        <h3>🔗 Participant Management</h3>
+                        
+                        <div class="form-group">
+                            <label>Add Participants (CSV format)</label>
+                            <textarea id="participantData" placeholder="name,course,email&#10;John Doe,Web Development,john@email.com&#10;Jane Smith,Data Science,jane@email.com" rows="4"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Issue Date</label>
+                            <input type="date" id="issueDate">
+                        </div>
+                        
+                        <button class="btn btn-success" onclick="generateParticipantLinks()">🔗 Generate All Links</button>
+                        
+                        <div id="participantResults" style="display: none; margin-top: 15px;">
+                            <div style="display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-secondary" onclick="copyAllParticipantLinks()">Copy All</button>
+                                <button class="btn btn-secondary" onclick="downloadParticipantList()">Download</button>
+                                <button class="btn btn-secondary" onclick="generateEmailTemplates()">Email Templates</button>
+                            </div>
+                            <div style="max-height: 250px; overflow-y: auto;">
+                                <table class="participant-table" id="participantTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>ID</th>
+                                            <th>Link</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let elements = [];
+        let selectedElement = null;
+        let dragElement = null;
+        let dragOffset = { x: 0, y: 0 };
+        let elementCounter = 0;
+        let currentBackground = null;
+        let participantDatabase = {};
+        let currentMode = 'designer';
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            determineMode();
+            if (currentMode === 'viewer') {
+                initViewerMode();
+            } else {
+                initDesignerMode();
+            }
+        });
+
+        function determineMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Check if it's a certificate view link
+            if (urlParams.has('cert') || urlParams.has('id') || (urlParams.has('name') && urlParams.has('design'))) {
+                currentMode = 'viewer';
+            } else {
+                currentMode = 'designer';
+            }
+        }
+
+        function initViewerMode() {
+            document.getElementById('viewerMode').style.display = 'flex';
+            document.getElementById('designerMode').style.display = 'none';
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            let participantData = {};
+            
+            // Handle different URL formats
+            if (urlParams.has('id')) {
+                // Masked ID format: ?id=abc123
+                const id = urlParams.get('id');
+                participantData = decodeParticipantData(id);
+            } else if (urlParams.has('cert')) {
+                // Certificate data format: ?cert=encoded_data
+                try {
+                    participantData = JSON.parse(decodeURIComponent(urlParams.get('cert')));
+                } catch (e) {
+                    console.error('Error parsing certificate data:', e);
+                }
+            } else {
+                // Legacy format: individual parameters
+                participantData = {
+                    name: urlParams.get('name') || 'Certificate Recipient',
+                    course: urlParams.get('course') || '',
+                    date: urlParams.get('date') || new Date().toISOString().split('T')[0],
+                    design: urlParams.get('design') || '{}'
+                };
+            }
+            
+            loadCertificateForViewing(participantData);
+        }
+
+        function initDesignerMode() {
+            document.getElementById('designerMode').style.display = 'block';
+            document.getElementById('viewerMode').style.display = 'none';
+            
+            setupDesignerEventListeners();
+            setTodaysDate();
+        }
+
+        function loadCertificateForViewing(participantData) {
+            try {
+                const designData = typeof participantData.design === 'string' 
+                    ? JSON.parse(decodeURIComponent(participantData.design))
+                    : participantData.design;
+                
+                // Update welcome message
+                document.getElementById('viewerWelcome').textContent = 
+                    `Congratulations ${participantData.name}!`;
+                
+                // Set up certificate display
+                const display = document.getElementById('certificateDisplay');
+                
+                // Apply background
+                if (designData.background) {
+                    display.style.backgroundImage = `url(${designData.background})`;
+                } else {
+                    // Default template
+                    display.style.backgroundImage = 'linear-gradient(45deg, #ffd700, #ffed4e)';
+                }
+                
+                // Apply canvas size
+                if (designData.canvasWidth && designData.canvasHeight) {
+                    display.style.width = designData.canvasWidth + 'px';
+                    display.style.height = designData.canvasHeight + 'px';
+                }
+                
+                // Render elements
+                if (designData.elements) {
+                    designData.elements.forEach(element => {
+                        const div = document.createElement('div');
+                        div.className = 'text-element';
+                        div.style.position = 'absolute';
+                        div.style.left = element.x + 'px';
+                        div.style.top = element.y + 'px';
+                        div.style.fontSize = element.fontSize + 'px';
+                        div.style.fontFamily = element.fontFamily;
+                        div.style.color = element.color;
+                        div.style.fontWeight = element.fontWeight;
+                        div.style.fontStyle = element.fontStyle;
+                        div.style.textAlign = element.textAlign;
+                        div.style.border = 'none';
+                        div.style.cursor = 'default';
+                        
+                        // Replace placeholders with actual data
+                        let displayText = element.text;
+                        displayText = displayText.replace('{{name}}', participantData.name || '[Name]');
+                        displayText = displayText.replace('{{course}}', participantData.course || '[Course]');
+                        displayText = displayText.replace('{{date}}', formatDate(participantData.date));
+                        
+                        div.textContent = displayText;
+                        display.appendChild(div);
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error loading certificate:', error);
+                document.getElementById('viewerWelcome').textContent = 'Error loading certificate';
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Today';
+            try {
+                return new Date(dateStr).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function generateMaskedId() {
+            return Math.random().toString(36).substr(2, 9);
+        }
+
+        function encodeParticipantData(data) {
+            // Simple encoding - in production, use proper encryption
+            const id = generateMaskedId();
+            participantDatabase[id] = data;
+            return id;
+        }
+
+        function decodeParticipantData(id) {
+            return participantDatabase[id] || {};
+        }
+
+        function generateParticipantLinks() {
+            const participantText = document.getElementById('participantData').value.trim();
+            if (!participantText) {
+                alert('Please enter participant data in CSV format');
+                return;
+            }
+
+            const lines = participantText.split('\n').filter(line => line.trim());
+            const participants = [];
+            
+            // Parse CSV data
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const parts = line.split(',').map(p => p.trim());
+                if (parts.length >= 1) {
+                    participants.push({
+                        name: parts[0] || '',
+                        course: parts[1] || '',
+                        email: parts[2] || '',
+                        id: generateMaskedId()
+                    });
+                }
+            }
+
+            if (participants.length === 0) {
+                alert('No valid participant data found');
+                return;
+            }
+
+            // Generate design data
+            const designData = {
+                elements: elements,
+                background: currentBackground,
+                canvasWidth: document.getElementById('canvasWidth').value,
+                canvasHeight: document.getElementById('canvasHeight').value
+            };
+
+            const issueDate = document.getElementById('issueDate').value;
+            const baseUrl = window.location.href.split('?')[0];
+
+            // Generate links for each participant
+            const participantLinks = participants.map(participant => {
+                const certificateData = {
+                    name: participant.name,
+                    course: participant.course,
+                    email: participant.email,
+                    date: issueDate,
+                    design: designData
+                };
+
+                // Store in database
+                participantDatabase[participant.id] = certificateData;
+
+                // Create clean viewer URL
+                const viewerUrl = `${baseUrl}?id=${participant.id}`;
+                
+                return {
+                    ...participant,
+                    url: viewerUrl,
+                    shortUrl: `${baseUrl}?id=${participant.id}`
+                };
+            });
+
+            displayParticipantResults(participantLinks);
+            window.generatedParticipantLinks = participantLinks;
+        }
+
+        function displayParticipantResults(participants) {
+            const resultsDiv = document.getElementById('participantResults');
+            const tableBody = document.querySelector('#participantTable tbody');
+            
+            const rows = participants.map(participant => `
+                <tr>
+                    <td>${participant.name}</td>
+                    <td><span class="id-display">${participant.id}</span></td>
+                    <td style="font-size: 10px; max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${participant.shortUrl}</td>
+                </tr>
+            `).join('');
+            
+            tableBody.innerHTML = rows;
+            resultsDiv.style.display = 'block';
+        }
+
+        function copyAllParticipantLinks() {
+            if (!window.generatedParticipantLinks) return;
+            
+            const text = window.generatedParticipantLinks.map(participant => 
+                `${participant.name}: ${participant.url}`
+            ).join('\n\n');
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                btn.style.background = '#10b981';
+                btn.style.color = 'white';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            });
+        }
+
+        function downloadParticipantList() {
+            if (!window.generatedParticipantLinks) return;
+            
+            const content = [
+                'Certificate Links Generated on ' + new Date().toLocaleDateString(),
+                '=' .repeat(60),
+                '',
+                'CLEAN CERTIFICATE VIEWER LINKS:',
+                '(Recipients see only their certificate and download option)',
+                '',
+                ...window.generatedParticipantLinks.map(participant => 
+                    `${participant.name} (ID: ${participant.id}): ${participant.url}`
+                ),
+                '',
+                'Instructions for participants:',
+                '1. Click your personal link',
+                '2. Your certificate loads automatically',
+                '3. Click "Download Certificate PDF" to save',
+                '',
+                'Each link is personalized and secure.',
+                'Links can be shared via email, WhatsApp, SMS, or any messaging platform.'
+            ].join('\n');
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'certificate_links.txt';
+            link.click();
+        }
+
+        function generateEmailTemplates() {
+            if (!window.generatedParticipantLinks) return;
+            
+            const individualTemplates = window.generatedParticipantLinks.map(participant => `
+=== EMAIL FOR: ${participant.name.toUpperCase()} ===
+
+Subject: 🎉 Your Certificate is Ready - ${participant.course || 'Course Completion'}
+
+Hi ${participant.name},
+
+Congratulations! Your certificate is ready for download.
+
+🏆 Your Personal Certificate Link: ${participant.url}
+
+What to do next:
+• Click the link above
+• Your certificate will load automatically  
+• Click "Download Certificate PDF" to save
+• Share your achievement!
+
+This is your personal link - no need to enter any information.
+
+Best regards,
+[Your Organization Name]
+
+${participant.email ? `(Sent to: ${participant.email})` : ''}
+
+---
+            `).join('\n');
+            
+            const content = `PERSONALIZED EMAIL TEMPLATES
+Generated on ${new Date().toLocaleDateString()}
+${individual.templates}
+
+BULK EMAIL INSTRUCTIONS:
+1. Copy each email section above
+2. Send individual emails to each participant
+3. Or use mail merge tools with the participant data
+4. Each link is unique and personalized
+
+Total Participants: ${window.generatedParticipantLinks.length}
+`;
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'personalized_email_templates.txt';
+            link.click();
+        }
+
+        // Viewer mode functions
+        async function downloadCertificatePDF() {
+            const { jsPDF } = window.jspdf;
+            const certificate = document.getElementById('certificateDisplay');
+            
+            try {
+                const canvas = await html2canvas(certificate, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const pdf = new jsPDF('landscape', 'mm', 'a4');
+                const imgWidth = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                // Get recipient name from URL or use default
+                const urlParams = new URLSearchParams(window.location.search);
+                let filename = 'Certificate.pdf';
+                
+                if (urlParams.has('id')) {
+                    const data = decodeParticipantData(urlParams.get('id'));
+                    if (data.name) {
+                        filename = `${data.name.replace(/\s+/g, '_')}_Certificate.pdf`;
+                    }
+                }
+                
+                pdf.save(filename);
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            }
+        }
+
+        function shareCertificate() {
+            const url = window.location.href;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Certificate',
+                    text: 'Check out my certificate!',
+                    url: url
+                }).catch(() => {
+                    // Fallback to copy
+                    copyToClipboard(url);
+                });
+            } else {
+                copyToClipboard(url);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Certificate link copied to clipboard!');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Certificate link copied!');
+            });
+        }
+
+        // Designer mode functions (simplified for space)
+        function setupDesignerEventListeners() {
+            const canvas = document.getElementById('designCanvas');
+            
+            canvas.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+            canvas.addEventListener('click', selectElement);
+            
+            const fileInput = document.getElementById('backgroundImage');
+            fileInput.addEventListener('change', handleFileUpload);
+            
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('drop', handleFileDrop);
+            
+            document.querySelectorAll('.template-thumb').forEach(thumb => {
+                thumb.addEventListener('click', function() {
+                    document.querySelectorAll('.template-thumb').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    setTemplate(this.dataset.template);
+                });
+            });
+        }
+
+        function setTodaysDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('issueDate').value = today;
+        }
+
+        // Include all other designer functions here (abbreviated for space)
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    setBackgroundImage(e.target.result);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleFileDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0 && files[0].type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    setBackgroundImage(e.target.result);
+                };
+                reader.readAsDataURL(files[0]);
+            }
+        }
+
+        function setBackgroundImage(imageData) {
+            const canvas = document.getElementById('designCanvas');
+            canvas.style.backgroundImage = `url(${imageData})`;
+            currentBackground = imageData;
+            
+            document.querySelectorAll('.template-thumb').forEach(t => t.classList.remove('active'));
+        }
+
+        function setTemplate(template) {
+            const canvas = document.getElementById('designCanvas');
+            currentBackground = null;
+            
+            switch(template) {
+                case 'classic':
+                    canvas.style.backgroundImage = 'linear-gradient(45deg, #ffd700, #ffed4e)';
+                    break;
+                case 'modern':
+                    canvas.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    break;
+                case 'elegant':
+                    canvas.style.backgroundImage = 'linear-gradient(45deg, #2d3748, #4a5568)';
+                    break;
+                case 'vibrant':
+                    canvas.style.backgroundImage = 'linear-gradient(45deg, #ff6b6b, #feca57)';
+                    break;
+            }
+        }
+
+        function clearBackground() {
+            const canvas = document.getElementById('designCanvas');
+            canvas.style.backgroundImage = 'none';
+            currentBackground = null;
+            document.querySelectorAll('.template-thumb').forEach(t => t.classList.remove('active'));
+        }
+
+        function addTextElement(type, defaultText) {
+            elementCounter++;
+            const element = {
+                id: `element_${elementCounter}`,
+                type: type,
+                text: defaultText,
+                x: 50 + (elementCounter * 20),
+                y: 50 + (elementCounter * 30),
+                fontSize: 24,
+                fontFamily: 'Arial',
+                color: '#000000',
+                fontWeight: 'normal',
+                fontStyle: 'normal',
+                textAlign: 'left'
+            };
+            
+            elements.push(element);
+            renderElement(element);
+            updateElementList();
+            selectElementById(element.id);
+        }
+
+        function renderElement(element) {
+            const canvas = document.getElementById('designCanvas');
+            const div = document.createElement('div');
+            div.className = 'text-element';
+            div.id = element.id;
+            div.style.left = element.x + 'px';
+            div.style.top = element.y + 'px';
+            div.style.fontSize = element.fontSize + 'px';
+            div.style.fontFamily = element.fontFamily;
+            div.style.color = element.color;
+            div.style.fontWeight = element.fontWeight;
+            div.style.fontStyle = element.fontStyle;
+            div.style.textAlign = element.textAlign;
+            div.textContent = element.text;
+            
+            canvas.appendChild(div);
+        }
+
+        function updateElementList() {
+            const list = document.getElementById('elementList');
+            if (elements.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: #9ca3af; font-style: italic;">No elements added</div>';
+                return;
+            }
+            
+            list.innerHTML = elements.map(element => `
+                <div class="element-item" onclick="selectElementById('${element.id}')" data-id="${element.id}">
+                    <span>${element.type}: ${element.text.substring(0, 20)}${element.text.length > 20 ? '...' : ''}</span>
+                    <button class="btn btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deleteElement('${element.id}', event)">×</button>
+                </div>
+            `).join('');
+        }
+
+        function selectElement(event) {
+            if (event.target.classList.contains('text-element')) {
+                selectElementById(event.target.id);
+            } else {
+                deselectElement();
+            }
+        }
+
+        function selectElementById(id) {
+            deselectElement();
+            
+            const elementDiv = document.getElementById(id);
+            const element = elements.find(e => e.id === id);
+            
+            if (elementDiv && element) {
+                elementDiv.classList.add('selected');
+                selectedElement = element;
+                updatePropertiesPanel();
+                updateElementListSelection();
+            }
+        }
+
+        function deselectElement() {
+            document.querySelectorAll('.text-element.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+            selectedElement = null;
+            updatePropertiesPanel();
+            updateElementListSelection();
+        }
+
+        function updateElementListSelection() {
+            document.querySelectorAll('.element-item').forEach(item => {
+                item.classList.remove('selected');
+                if (selectedElement && item.dataset.id === selectedElement.id) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        function deleteElement(id, event) {
+            event.stopPropagation();
+            elements = elements.filter(e => e.id !== id);
+            document.getElementById(id).remove();
+            updateElementList();
+            if (selectedElement && selectedElement.id === id) {
+                deselectElement();
+            }
+        }
+
+        function updatePropertiesPanel() {
+            const panel = document.getElementById('propertiesContent');
+            
+            if (!selectedElement) {
+                panel.innerHTML = '<div style="text-align: center; color: #9ca3af; font-style: italic;">Select an element to edit</div>';
+                return;
+            }
+            
+            panel.innerHTML = `
+                <div class="form-group">
+                    <label>Text</label>
+                    <textarea id="propText" rows="3">${selectedElement.text}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Font Size</label>
+                    <input type="number" id="propFontSize" value="${selectedElement.fontSize}" min="8" max="100" class="size-input">
+                </div>
+                <div class="form-group">
+                    <label>Font Family</label>
+                    <select id="propFontFamily">
+                        <option value="Arial" ${selectedElement.fontFamily === 'Arial' ? 'selected' : ''}>Arial</option>
+                        <option value="Georgia" ${selectedElement.fontFamily === 'Georgia' ? 'selected' : ''}>Georgia</option>
+                        <option value="Times New Roman" ${selectedElement.fontFamily === 'Times New Roman' ? 'selected' : ''}>Times New Roman</option>
+                        <option value="Helvetica" ${selectedElement.fontFamily === 'Helvetica' ? 'selected' : ''}>Helvetica</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <input type="color" id="propColor" value="${selectedElement.color}" class="color-input">
+                </div>
+                <div class="form-group">
+                    <label>Font Weight</label>
+                    <select id="propFontWeight">
+                        <option value="normal" ${selectedElement.fontWeight === 'normal' ? 'selected' : ''}>Normal</option>
+                        <option value="bold" ${selectedElement.fontWeight === 'bold' ? 'selected' : ''}>Bold</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="applyProperties()">Apply Changes</button>
+            `;
+        }
+
+        function applyProperties() {
+            if (!selectedElement) return;
+            
+            selectedElement.text = document.getElementById('propText').value;
+            selectedElement.fontSize = parseInt(document.getElementById('propFontSize').value);
+            selectedElement.fontFamily = document.getElementById('propFontFamily').value;
+            selectedElement.color = document.getElementById('propColor').value;
+            selectedElement.fontWeight = document.getElementById('propFontWeight').value;
+            
+            updateElementDisplay(selectedElement);
+            updateElementList();
+        }
+
+        function updateElementDisplay(element) {
+            const div = document.getElementById(element.id);
+            div.style.fontSize = element.fontSize + 'px';
+            div.style.fontFamily = element.fontFamily;
+            div.style.color = element.color;
+            div.style.fontWeight = element.fontWeight;
+            div.textContent = element.text;
+        }
+
+        function startDrag(event) {
+            if (event.target.classList.contains('text-element')) {
+                dragElement = event.target;
+                const rect = dragElement.getBoundingClientRect();
+                const canvasRect = document.getElementById('designCanvas').getBoundingClientRect();
+                
+                dragOffset.x = event.clientX - rect.left;
+                dragOffset.y = event.clientY - rect.top;
+                
+                event.preventDefault();
+            }
+        }
+
+        function drag(event) {
+            if (dragElement) {
+                const canvasRect = document.getElementById('designCanvas').getBoundingClientRect();
+                const x = event.clientX - canvasRect.left - dragOffset.x;
+                const y = event.clientY - canvasRect.top - dragOffset.y;
+                
+                dragElement.style.left = Math.max(0, Math.min(x, canvasRect.width - dragElement.offsetWidth)) + 'px';
+                dragElement.style.top = Math.max(0, Math.min(y, canvasRect.height - dragElement.offsetHeight)) + 'px';
+                
+                const element = elements.find(e => e.id === dragElement.id);
+                if (element) {
+                    element.x = parseInt(dragElement.style.left);
+                    element.y = parseInt(dragElement.style.top);
+                }
+            }
+        }
+
+        function endDrag() {
+            dragElement = null;
+        }
+
+        function updateCanvasSize() {
+            const canvas = document.getElementById('designCanvas');
+            const width = document.getElementById('canvasWidth').value;
+            const height = document.getElementById('canvasHeight').value;
+            
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+        }
+
+        function saveDesign() {
+            const designData = {
+                elements: elements,
+                background: currentBackground,
+                canvasWidth: document.getElementById('canvasWidth').value,
+                canvasHeight: document.getElementById('canvasHeight').value
+            };
+            
+            const dataStr = JSON.stringify(designData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'certificate_design.json';
+            link.click();
+        }
+
+        function loadDesign() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const designData = JSON.parse(e.target.result);
+                            loadDesignFromData(designData);
+                        } catch (error) {
+                            alert('Error loading design file');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        function loadDesignFromData(designData) {
+            if (designData.background) {
+                setBackgroundImage(designData.background);
+            }
+            
+            if (designData.canvasWidth && designData.canvasHeight) {
+                document.getElementById('canvasWidth').value = designData.canvasWidth;
+                document.getElementById('canvasHeight').value = designData.canvasHeight;
+                updateCanvasSize();
+            }
+            
+            if (designData.elements) {
+                elements = designData.elements;
+                elementCounter = Math.max(...elements.map(e => parseInt(e.id.split('_')[1]))) || 0;
+                
+                document.querySelectorAll('.text-element').forEach(el => el.remove());
+                
+                elements.forEach(element => {
+                    renderElement(element);
+                });
+                
+                updateElementList();
+            }
+        }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const canvas = document.getElementById('designCanvas');
+            
+            const selected = document.querySelector('.text-element.selected');
+            if (selected) {
+                selected.classList.remove('selected');
+            }
+            
+            try {
+                const htmlCanvas = await html2canvas(canvas, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const pdf = new jsPDF('landscape', 'mm', 'a4');
+                const imgWidth = 297;
+                const imgHeight = (htmlCanvas.height * imgWidth) / htmlCanvas.width;
+                
+                pdf.addImage(htmlCanvas.toDataURL('image/png'), 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                pdf.save('Certificate_Template.pdf');
+            } catch (error) {
+                console.error('Error generating PDF:', error);
+                alert('Error generating PDF. Please try again.');
+            } finally {
+                if (selected) {
+                    selected.classList.add('selected');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
