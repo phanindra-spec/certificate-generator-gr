@@ -828,6 +828,7 @@
             div.style.fontWeight = element.fontWeight;
             div.style.fontStyle = element.fontStyle;
             div.style.textAlign = element.textAlign;
+            div.style.minWidth = element.textAlign === 'center' ? '300px' : 'auto';
             div.textContent = element.text;
             
             canvas.appendChild(div);
@@ -1281,7 +1282,7 @@ Best regards,
                 display.style.width = (designData.canvasWidth || 800) + 'px';
                 display.style.height = (designData.canvasHeight || 600) + 'px';
                 
-                // Render elements
+                // Render elements with high quality
                 if (designData.elements && Array.isArray(designData.elements)) {
                     designData.elements.forEach(element => {
                         const div = document.createElement('div');
@@ -1293,6 +1294,11 @@ Best regards,
                         div.style.color = element.color || '#000000';
                         div.style.fontWeight = element.fontWeight || 'normal';
                         div.style.textAlign = element.textAlign || 'left';
+                        div.style.minWidth = element.textAlign === 'center' ? '300px' : 'auto';
+                        // High quality text rendering
+                        div.style.webkitFontSmoothing = 'antialiased';
+                        div.style.mozOsxFontSmoothing = 'grayscale';
+                        div.style.textRendering = 'optimizeLegibility';
                         
                         let displayText = element.text || '';
                         displayText = displayText.replace('{{name}}', participantData.name || '[Name]');
